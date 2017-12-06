@@ -28,10 +28,9 @@
             var count = 0;
             do
             {
-                _seenStates.Add(Pickle(_memBanks));
                 _memBanks = Redistribute(_memBanks);
                 count++;
-            } while (!_seenStates.Contains(Pickle(_memBanks)));
+            } while (_seenStates.Add(Pickle(_memBanks)));
             _seenStates.Clear();
             _seenStates.Add(Pickle(_memBanks));
             return count;
