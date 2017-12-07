@@ -14,6 +14,7 @@
         {
             public string Name { get; set; }
             public int Weight { get; set; }
+            public int TotalWeight { get; set; }
             public Node Parent { get; set; } 
             public IDictionary<string, Node> Children = new Dictionary<string, Node>();
 
@@ -23,6 +24,7 @@
                 var matches = Regex.Matches(input, @"(?:(\w+))");
                 Name = matches[0].Value;
                 Weight = int.Parse(matches[1].Value);
+                TotalWeight = Weight;
                 Parent = HEAD;
                 for (var i = 2; i < matches.Count; i++)
                 {
@@ -52,32 +54,67 @@
         {
             var root = Treeify();
             Console.WriteLine(root.Name);
-            Console.WriteLine(FindUnbalancedNode(root).Name);
+            var unbalanced = FindUnbalancedNode(root);
+            Console.WriteLine("Unbalanced Node : {0}", unbalanced.Name);
+            Console.WriteLine("Should be : {0}", CorrectUnbalancedNode(unbalanced));
             Console.Read();
+        }
+
+        static int CorrectUnbalancedNode(Node unbalanced)
+        {
+            var parent = unbalanced.Parent;
+            var goalWeight = parent.Children.Values
+                .First(x => x.Name != unbalanced.Name)
+                .TotalWeight;
+            var childrenWeight = unbalanced.Children.Values
+                .Sum(x => x.TotalWeight);
+            return goalWeight - childrenWeight;
         }
 
         static Node FindUnbalancedNode(Node root)
         {
+            Node unbalanced = null;
             foreach (var childNode in root.Children.Values)
             {
-                if (IsUnbalanced(childNode))
+                var output = FindUnbalancedNode(childNode);
+                if (output.Name != childNode.Name)
                 {
-                    return childNode;
+                    unbalanced = output;
+                    break;
+                }
+                unbalanced = GetUnbalancedChild(output);
+                if (unbalanced != null)
+                {
+                    break;
                 }
             }
-            return root;
+            //unbalanced = unbalanced ?? GetUnbalancedChild(root);
+            root.TotalWeight += root.Children.Count == 0 ? 0 : root.Children.Values.Sum(x => x.TotalWeight);
+            return unbalanced ?? root;
         }
 
-        static bool IsUnbalanced(Node toTest)
+        static Node GetUnbalancedChild(Node toTest)
         {
             if (toTest.Children.Count == 0)
             {
-                return false;
+                return null;
             }
 
             var children = toTest.Children.Values;
             var firstChild = children.First();
-            return children.Any(x => x.Weight != firstChild.Weight);
+            var differentChildren = children
+                .Where(x => x.TotalWeight != firstChild.TotalWeight)
+                .ToList();
+            var diffChildrenCount = differentChildren.Count;
+            if (diffChildrenCount > 1)
+            {
+                return firstChild;
+            }
+            if (diffChildrenCount == 1)
+            {
+                return differentChildren.First();
+            }
+            return null;
         }
 
         static Node Treeify()
