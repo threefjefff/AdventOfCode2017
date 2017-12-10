@@ -36,3 +36,15 @@ Day7/obj/Debug/
 Day8/bin/Debug/
 
 Day8/obj/Debug/
+
+Day1/obj/Release/
+
+Day5/obj/Release/
+
+*.cache
+
+Day9/bin/Debug/netcoreapp1\.1/
+
+Day9/obj/Debug/netcoreapp1\.1/
+
+Day9/obj/
